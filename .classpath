@@ -3,5 +3,8 @@
 	<classpathentry kind="src" path="src"/>
 	<classpathentry kind="src" path="gen"/>
 	<classpathentry kind="con" path="com.android.ide.eclipse.adt.ANDROID_FRAMEWORK"/>
+	<classpathentry kind="lib" path="D:/java/kxml2-2.3.0.jar"/>
+	<classpathentry kind="lib" path="D:/bmelinux/bme/bcprov-jdk16-145.jar"/>
+	<classpathentry kind="lib" path="D:/bmelinux/bme/bctsp-jdk16-145.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
