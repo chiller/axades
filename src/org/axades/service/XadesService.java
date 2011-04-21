@@ -6,31 +6,27 @@ import android.util.Log;
 
 public class XadesService extends IntentService {
 
-	  /** 
-	   * A constructor is required, and must call the super IntentService(String)
-	   * constructor with a name for the worker thread.
-	   */
+	  //A szülőnek át kell adni a dolgozó szál nevét
 	  public XadesService() {
 	      super("XadesService");
 	  }
 
-	  /**
-	   * The IntentService calls this method from the default worker thread with
-	   * the intent that started the service. When this method returns, IntentService
-	   * stops the service, as appropriate.
+	  /*Az IntentService ezt hívja meg a dolgozó szálból azzal az Intent objektummal,
+	   *  ami elindította, majd visszatérés után leállítja a Service-t.
 	   */
 	  protected void onHandleIntent(Intent intent) {
 	      Log.v("Xades","Called XadesService");
-	      
-	      //String broadcastid = intent.getStringExtra("broadcastid");
-	      String broadcastid = "alma";
+	      //A broadcast cím kiolvasása
+	      String broadcastid = intent.getStringExtra("broadcastid");
 	      //###########
 	      //Crypto Core
 	      //###########
+	      //A broadcast uzenet létrehozása
 	      Intent broadcast = new Intent();
 	      broadcast.putExtra("result", "Success");
 	      broadcast.setAction(broadcastid);
 	      sendBroadcast(broadcast);
 	      
+	      return;  
 	  }
 	}

@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-      package="org.axades.signer"
+      package="org.axades.core"
       android:versionCode="1"
       android:versionName="1.0">
     <uses-sdk android:minSdkVersion="8" />
@@ -8,7 +8,7 @@
     <application android:icon="@drawable/icon" android:label="@string/app_name">
 		<service android:name="org.axades.service.XadesService" >
 			<intent-filter>
-    			<action android:name="org.axades.signer.START_CORE_SERVICE" />
+    			<action android:name="org.axades.core.START_CORE_SERVICE" />
 			</intent-filter>
 		
 		</service>
