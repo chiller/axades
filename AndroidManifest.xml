@@ -6,7 +6,17 @@
     <uses-sdk android:minSdkVersion="8" />
 
     <application android:icon="@drawable/icon" android:label="@string/app_name">
-
-
+		<service android:name="org.axades.service.XadesService" >
+			<intent-filter>
+    			<action android:name="org.axades.signer.START_CORE_SERVICE" />
+			</intent-filter>
+		
+		</service>
+		
+    
     </application>
+    
+    <uses-permission android:name="android.permission.INTERNET"></uses-permission>
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"></uses-permission>
+
 </manifest>

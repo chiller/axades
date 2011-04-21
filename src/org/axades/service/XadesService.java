@@ -20,10 +20,10 @@ public class XadesService extends IntentService {
 	   * stops the service, as appropriate.
 	   */
 	  protected void onHandleIntent(Intent intent) {
-	      Log.v("xades","Called XadesService");
+	      Log.v("Xades","Called XadesService");
 	      
-	      String broadcastid = intent.getStringExtra("broadcastid");
-	      broadcastid = "alma";
+	      //String broadcastid = intent.getStringExtra("broadcastid");
+	      String broadcastid = "alma";
 	      //###########
 	      //Crypto Core
 	      //###########
