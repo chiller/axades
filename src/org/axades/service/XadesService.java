@@ -8,7 +8,6 @@ import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
 import java.security.SignatureException;
 import java.security.UnrecoverableKeyException;
-import java.security.cert.CertificateEncodingException;
 import java.security.cert.CertificateException;
 
 import org.axades.core.XadesT;
@@ -32,10 +31,19 @@ public class XadesService extends IntentService {
 	      Log.v("Xades","Called XadesService");
 	      //A broadcast cím kiolvasása
 	      String broadcastid = intent.getStringExtra("broadcastid");
-	      //###########
-	      //Crypto Core
+	      String p12path = intent.getStringExtra("p12path");
+	      String p12pass = intent.getStringExtra("p12pass");
+	      String signdata = intent.getStringExtra("signdata");
 	      
-	      call_signer();
+	      //###########
+	      //Crypto Core 
+	       
+	      try{	      
+	    	  call_signer(signdata, p12path, p12pass);
+	      }
+	      catch (Exception e){
+	    	  e.printStackTrace();
+	      }
 	      
 	      //###########
 	      //A broadcast uzenet létrehozása
@@ -47,59 +55,11 @@ public class XadesService extends IntentService {
 	      return;  
 	  }
 	  
-	  private void call_signer()
+	  private void call_signer(String signdatapath, String p12path, String p12pass) throws KeyStoreException, NoSuchProviderException, NoSuchAlgorithmException, CertificateException, FileNotFoundException, IOException, InvalidKeyException, UnrecoverableKeyException, SignatureException, TSPException
 	  {
-		  XadesT signer = new XadesT();
-		  try {
-			signer.initKeystore();
-		} catch (KeyStoreException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (NoSuchProviderException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (NoSuchAlgorithmException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (CertificateException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (FileNotFoundException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-		  try {
-			signer.sign();
-		} catch (InvalidKeyException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (CertificateEncodingException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (NoSuchAlgorithmException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (KeyStoreException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (UnrecoverableKeyException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (SignatureException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (NoSuchProviderException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (TSPException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
+		  XadesT signer = new XadesT(signdatapath, p12path, p12pass);
+		  signer.initKeystore();
+		  signer.sign();
+		
 	  }
 	}

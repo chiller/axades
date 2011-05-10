@@ -14,8 +14,15 @@ import org.kxml2.kdom.Element;
 import org.kxml2.kdom.Node;
 
 import android.util.Log;
-
+/*
+ * Kriptográfiai muveletekhez használandó segédfüggvények
+ */
 public class XadesUtil {
+	
+	/*
+	 * Egy KXML dokumentumot kiir az adott elérési utvonalra
+	 * A segedfuggvenyek egy resze a Beginning Cryptography with Java peldakodjaibol szarmazik
+	 */
 	public static void XMLOutput(Document doc, String path, boolean enveloping, boolean simplets) {
 		
 		KXmlSerializer serializer = new KXmlSerializer();
@@ -25,8 +32,7 @@ public class XadesUtil {
 			 Element sig = root.getElement("", "ds:Signature");
 			 Document ketto = new Document();
 			 ketto.addChild(Node.ELEMENT, sig);
-			 
-			doc=ketto;
+			 doc=ketto;
 		}
 		try {
 			String tsoption = "notscert";
@@ -37,7 +43,6 @@ public class XadesUtil {
 			
 			serializer.setOutput(fas, "UTF-8");
 			Log.v("Xades","done");
-			//tv.setText("Hello, Android4"+fas.toString());
 		
 		} catch (FileNotFoundException e1) {
 			
@@ -57,7 +62,9 @@ public class XadesUtil {
 		}
 		
 	}
-	
+	/*
+	 * A kanonikus formahoz minden nodenak specifikalni kell a nevteret
+	 */
 	public static void set_xmlns(Element el, String xmlns_Enveloping){
         el.setAttribute(null,"xmlns","http://uri.etsi.org/01903/v1.3.2#");
         el.setAttribute(null,"xmlns:ds","http://www.w3.org/2000/09/xmldsig#");
@@ -65,6 +72,9 @@ public class XadesUtil {
         	el.setAttribute(null,"xmlns:"+ xmlns_Enveloping ,"http://www.szabo-aron.hu/uri/XAdES-PHP/v/20091201");
         }
 	}
+	/*
+	 * Datum segedosztaly
+	 */
 	public static class DateUtils {
 		  public static final String DATE_FORMAT_NOW = "yyyy-MM-dd HH:mm:ss";
 
@@ -88,12 +98,8 @@ public class XadesUtil {
 
 		  }
 	}
-	 /**
-     * Convert a byte array of 8 bit characters into a String.
-     *
-     * @param bytes the array containing the characters
-     * @param length the number of bytes to process
-     * @return a String representation of bytes
+	 /*
+     * Byte tombbol Stringet hoz letre
      */
     public static String toString(byte[] bytes, int length)
     {
@@ -107,12 +113,8 @@ public class XadesUtil {
         return new String(chars);
     }
 
-    /**
-     * Convert a byte array of 8 bit characters into a String.
-     *
-     * @param bytes the array containing the characters
-     * @param length the number of bytes to process
-     * @return a String representation of bytes
+    /*
+     * Byte** -> String konverzió
      */
     public static String toString(byte[] bytes)
     {
@@ -120,7 +122,9 @@ public class XadesUtil {
     }
     
     
-    
+    /* 
+     * Byte tombot hexadecimalis formaba konvertal es stringkent adja vissza
+     */
     public static String toHex(byte[] data, int length)
     {
         StringBuffer    buf = new StringBuffer();
@@ -135,12 +139,9 @@ public class XadesUtil {
 
         return buf.toString();
     }
-
-    /**
-     * Return the passed in byte array as a hex string.
-     *
-     * @param data the bytes to be converted.
-     * @return a hex representation of data.
+    
+    /*
+     * Byte tomb -> Hexadecimalis String konverzio
      */
     public static String toHex(byte[] data)
     {
@@ -149,9 +150,11 @@ public class XadesUtil {
     
     
    
-    
-   public static byte[] hexToByteArray(String input){
-
+    /*
+     * Hexadecimalis String -> Byte tomb
+     */
+    public static byte[] hexToByteArray(String input)
+    {
 	   char[] charstring = input.toCharArray();
 	   byte[] out = new byte[input.length()/2];
 	   for (int i=0;i<charstring.length;i+=2){
@@ -165,14 +168,16 @@ public class XadesUtil {
 	   return out;
    }
  
-
-public static int hexCharToInt(int c){
-   if (c>90){
-	   c=c-87;
-   }
-   else{
-	   c=c-48;
-   }
-   return c;
-}
+   /*
+    * Hexadecimalis karakter -> int
+    */
+	public static int hexCharToInt(int c){
+	   if (c>90){
+		   c=c-87;
+	   }
+	   else{
+		   c=c-48;
+	   }
+	   return c;
+	}
 }

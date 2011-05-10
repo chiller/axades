@@ -1,7 +1,7 @@
 package org.axades.core;
 
-
 import java.io.ByteArrayOutputStream;
+import java.io.DataOutputStream;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -35,66 +35,84 @@ import org.kxml2.kdom.Node;
 
 import android.util.Log;
 
-
-
-
 public class XadesT {
 	//debug flagek
 	private boolean enveloping = true;
 	private boolean simplets = true;
-	private boolean bypassts = true;
+	//Alapertelmezett parameterek
 	String _PIN_code="1234567890";
-	
-	byte[] _data = "Hello World!".getBytes();
-	Document doc;
-	KeyStore keystore;
 	String alias="none";
 	String _xmlns_Enveloping = "ns";
 	String _digest_algorithm_URI = "http://www.w3.org/2000/09/xmldsig#sha1";
 	String _signature_algorithm_URI = "http://www.w3.org/2000/09/xmldsig#rsa-sha1";
     String xmlns_XAdES = "";
     String tsaUrl = "http://egtstamp.egroup.hu:80/tsa";
-    String keystore_path = "/sdcard/end_1234567890_2011-2013.p12";
     String output_path = "/sdcard/";
-    //initialized in getSigningCertificate
+    String keystore_path = null;
+    
+	byte[] _data;
+	Document doc;
+	KeyStore keystore;
+	
+    //XML nodeok amikre globalisan szukseges a referencia
     private Element signedInfo;
-    private String X509IssuerName_value_signer;
-	private String X509Certificate_value_signer;
 	private Vector<Element> dataObjectFormats;
 	private Element signingCertificate;
 	private Element signatureValue;
 	private byte[] signatureByte;
-	///
 	
-	public XadesT(){
+	
+	public XadesT(String signdatapath, String p12path, String p12pass) throws IOException{
+		keystore_path = p12path;
+		_PIN_code = p12pass; 
+		
+		//Adatok beolvasasa byte tombbe
+		
+		FileInputStream fis = new FileInputStream(signdatapath); 	
+		ByteArrayOutputStream baos = new ByteArrayOutputStream();
+		DataOutputStream dos = new DataOutputStream(baos);
+	    byte[] data = new byte[4096];
+	    int count = fis.read(data);
+	    while(count != -1)
+	    {
+	        dos.write(data, 0, count);
+	        count = fis.read(data);
+	    }
+	    _data = baos.toByteArray();
+		
+		
 		//XML init
+	    
 		doc = new Document();
 		if (!enveloping) _xmlns_Enveloping="";
+		
+		//BouncyCastle provider hozzaadasa
+		
 		Security.addProvider(new BouncyCastleProvider());
 	}
 	public void initKeystore() throws KeyStoreException, NoSuchProviderException, NoSuchAlgorithmException, CertificateException, FileNotFoundException, IOException{
+		
 		 keystore = KeyStore.getInstance("PKCS12", "BC"); 
 		 keystore.load (new FileInputStream(keystore_path), _PIN_code.toCharArray()); 
 		 Enumeration<String> aliases = keystore.aliases();
-		 while(aliases.hasMoreElements()){
-			 
+		 while(aliases.hasMoreElements()){	 
 			 alias = aliases.nextElement();
-			 System.out.println(alias);
 		 }
 	}
 	
 	////////////////////////
-	//CREATE XADES SIGNATURE
+	//XADES SIGNATURE
 	////////////////////////
 	public void sign() throws NoSuchAlgorithmException, KeyStoreException, UnrecoverableKeyException, InvalidKeyException, SignatureException, CertificateEncodingException, IOException, TSPException, NoSuchProviderException{
 		
-		//Creating root xml element
+		//Gyoker xml node
+		
 		Element envsig = doc.createElement("","ns:EnvelopingSignature");
 		XadesUtil.set_xmlns(envsig, _xmlns_Enveloping);
 		doc.addChild(Node.ELEMENT,envsig);
 	    
 	    /////////////////////////////////////
-	    //ns:SignedObject and DataObjectFormat
+	    //ns:SignedObject ,DataObjectFormat
 	    /////////////////////////////////////
 	    
 		Log.v("Xades","embedding to-be-signed contents and their metadata");
@@ -121,7 +139,7 @@ public class XadesT {
         Vector<Element> references = getReferences();
             
         
-        //Creating reference to SignedProperties
+        //SignedProperties reference
         MessageDigest spdig = MessageDigest.getInstance("SHA-1");
         
         OutputStream fas = new ByteArrayOutputStream();
@@ -146,7 +164,8 @@ public class XadesT {
         Element digestvalue = doc.createElement("", "ds:DigestValue");
         digestvalue.addChild(Node.TEXT, XadesUtil.toString(spdigbytesb64));
    	 	Element spreference = doc.createElement("", "ds:Reference");
-   	 	//#TODO: Leptetni az ID-t, tobb bemenet stb
+   	 	
+   	 	// Ez a verzió csak egy bemenetet tud aláírni
    	 	spreference.setAttribute(null, "Id", "EnvelopingSignature-0-Signature-0-SignedInfo-0-Reference-1");
         spreference.setAttribute(null, "Type", "http://uri.etsi.org/01903#SignedProperties");
         spreference.setAttribute(null, "URI", "#EnvelopingSignature-0-Signature-0-Object-0-QualifyingProperties-0-SignedProperties-0");
@@ -183,16 +202,13 @@ public class XadesT {
         
   
         Log.v("Xades","embedding certificates of certificate chain and their metadata (user signer and timestamp signer");
-        //TODO: certchain check beszuras
                  
          
         ///////////
         //ds:Object
     	///////////
 
-    	//creating structure of unsigned metadata
-
-             
+    	//creating structure of unsigned metadata     
     	Element unsignedSignatureProperties = doc.createElement("","UnsignedSignatureProperties");
         
     	/////////////////////
@@ -245,16 +261,9 @@ public class XadesT {
       
         signature.addChild(Node.ELEMENT,signedInfo);
 
-        /////////////////
-        //. $SignatureValue
-
         signature.addChild(Node.ELEMENT,signatureValue);
-        /////////////////
-        //. $KeyInfo
 
         signature.addChild(Node.ELEMENT,keyInfo);
-        /////////////////
-        //. $Object
 
         signature.addChild(Node.ELEMENT,object);
 
@@ -272,6 +281,10 @@ public class XadesT {
 	
 	}
 	
+	/*
+	 * Reszfeladatokhoz tarozo kodreszek
+	 * 
+	 */
 	
 	
 	/////////////////////////////////////
@@ -287,7 +300,6 @@ public class XadesT {
 	   
 	    
 	    
-	    // TODO Ez a resz tobb inputot is tudna kezelni
 	    String MimeType_value = "";
 	    byte[] data_base64encoded = org.bouncycastle.util.encoders.Base64.encode(_data);
 
@@ -301,7 +313,6 @@ public class XadesT {
 	    
 
 	   
-	    // TODO /todo  
 		return signedObjects;
 	}
 	//////////////////
@@ -377,8 +388,6 @@ public class XadesT {
 		String X509IssuerName_value = xcert.getIssuerDN().toString();
         
         String X509SerialNumber_value = xcert.getSerialNumber().toString();
-        X509IssuerName_value_signer = X509IssuerName_value;
-        X509Certificate_value_signer = XadesUtil.toString(org.bouncycastle.util.encoders.Base64.encode(xcert.getEncoded()));//filter_content_base64(file_read(_path_content+"certificate_pem.txt"));    
         
         byte[] certificate_der = xcert.getEncoded();
    	 	MessageDigest messageDigest = MessageDigest.getInstance("SHA-1");
@@ -528,7 +537,6 @@ public class XadesT {
         Signature sig = Signature.getInstance("SHA1withRSA");
 
    	 	sig.initSign(privateKey);
-   	 	//TODO: Ez itt lehet h tre a string->byte dolog miatt
    	 	
    	 	OutputStream fas = new ByteArrayOutputStream();
 		KXmlSerializer serializer = new KXmlSerializer();	
@@ -558,9 +566,7 @@ public class XadesT {
 	private Element getSignatureTimeStamp() throws NoSuchAlgorithmException, IOException, TSPException, NoSuchProviderException{
 		
 		Log.v("Xades","Signature timestamp");
-    	// TODO creating timestamp (RFC 3161 request-response)
-        //$SignatureTimeStamp_value = timestamp_request($SignatureValue, $path_openssl, $path_content, $path_curl, $path_certificate_CA, $certificate_authentication, $TSA_username, $TSA_password, $path_TSA, $TSA_digest_algorithm, $proxy_curl);
-
+    	
 	    //CanonicalizationMethod
         Element canonicalizationMethod = doc.createElement("","ds:CanonicalizationMethod");
         canonicalizationMethod.setAttribute(null,"Algorithm","http://www.w3.org/TR/2001/REC-xml-c14n-20010315");
@@ -583,7 +589,6 @@ public class XadesT {
         encapsulatedTimeStamp.addChild(Node.TEXT,tstokenb64);
         //SignatureTimeStamp
         Element signatureTimeStamp = doc.createElement("","SignatureTimeStamp");
-        //itt ha benne hagyom a hasht a namespaceben akkor nem jelenik meg
         signatureTimeStamp.setAttribute(null,"xmlns","http://uri.etsi.org/01903/v1.3.2#");
         signatureTimeStamp.setAttribute(null,"xmlns:ds","http://www.w3.org/2000/09/xmldsig#");
         signatureTimeStamp.setAttribute(null,"Id","EnvelopingSignature-0-Signature-0-Object-0-QualifyingProperties-0-UnsignedProperties-0-UnsignedSignatureProperties-0-SignatureTimeStamp-0");         signatureTimeStamp.addChild(Node.ELEMENT,canonicalizationMethod);
@@ -648,7 +653,6 @@ public class XadesT {
 		 //CompleteCertificateRefs
 		 Element completeCertificateRefs = doc.createElement("", "CompleteCertificateRefs");
 		 completeCertificateRefs.addChild(Node.ELEMENT,certRefs);
-		 //TODO: itt mi az id?
 		 
 		 return completeCertificateRefs;
 		
@@ -662,7 +666,6 @@ public class XadesT {
 		 
 		 //CompleteCertificateRefs
 		 Element certificateValues = doc.createElement("", "CertificateValues");
-		 //TODO: itt mi az id?
 		 
 		 int counter = 0;
 		 for(Certificate c:certchain){
